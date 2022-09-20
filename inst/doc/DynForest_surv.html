@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>DynForest for survival outcome</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore"><code>DynForest</code> for survival
+outcome</h1>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p><code>DynForest</code> is a parallelized R package, including two
+main functions <code>DynForest()</code> and <code>predict()</code> to
+respectively build the random forest, and predict the outcome on new
+subjects. Longitudinal predictors are modeled through the random forest
+using <code>lcmm</code> R package (see Proust-Lima <em>et al.</em>,
+2017). Although <code>DynForest</code> was developed to include
+longitudinal predictors, it can also be used with only time-fixed
+predictors such as conventional random forest.</p>
+</div>
+<div id="illustration-on-pbc2-data-with-survival-outcome" class="section level2">
+<h2>Illustration on <code>pbc2</code> data with survival outcome</h2>
+<p>We use <code>DynForest</code> on the pbc2 dataset (see Murtaugh
+<em>et al.</em>, 1994) to illustrate our methodology. Data come from the
+clinical trial conducted by the Mayo Clinic between 1974 and 1984. For
+the illustration, we consider a subsample of the original dataset
+resulting to 312 patients and 7 predictors. Among these predictors, the
+level of serum bilirubin (serBilir), aspartate aminotransferase (SGOT),
+albumin and alkaline were measured at inclusion and during the follow-up
+leading to a total of 1945 observations. Sex, age and the drug treatment
+were collected at the enrollment. During the follow-up, 140 patients
+died, 29 patients were transplanted and 143 patients were alive. The
+time of last follow-up (alive or any event) was considered as the event
+time. We deal the transplantation as a competing event in this
+illustration. We aim to predict the death on patients suffering from
+primary billiary cholangitis (PBC) using clinical and socio-demographic
+predictors.</p>
+<div id="build-predictors-objects" class="section level3">
+<h3>Build predictors objects</h3>
+<p>To begin, we load <code>DynForest</code> package and
+<code>pbc2</code> data and we split the subjects into two datasets: (i)
+to train the random forest using <span class="math inline">\(2/3\)</span> of patients; (ii) to predict on the
+other <span class="math inline">\(1/3\)</span> patients.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load package</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DynForest)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># load data</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(pbc2)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Split the data for training and prediction steps</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>id <span class="ot">&lt;-</span> <span class="fu">unique</span>(pbc2<span class="sc">$</span>id)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>id_sample <span class="ot">&lt;-</span> <span class="fu">sample</span>(id, <span class="fu">length</span>(id)<span class="sc">*</span><span class="dv">2</span><span class="sc">/</span><span class="dv">3</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>id_row <span class="ot">&lt;-</span> <span class="fu">which</span>(pbc2<span class="sc">$</span>id<span class="sc">%in%</span>id_sample)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>pbc2_train <span class="ot">&lt;-</span> pbc2[id_row,]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>pbc2_pred <span class="ot">&lt;-</span> pbc2[<span class="sc">-</span>id_row,]</span></code></pre></div>
+<p>Then, we build the dataframe for the longitudinal predictors
+including:</p>
+<ul>
+<li><strong>id</strong> the unique patient identifier;</li>
+<li><strong>time</strong> the observed time measurements;</li>
+<li><strong>serBilir</strong>, <strong>SGOT</strong>,
+<strong>albumin</strong> and <strong>alkaline</strong> the longitudinal
+predictors.</li>
+</ul>
+<p>These predictors were previously normalized to satisfy the Gaussian
+assumption for the linear mixed models. We also build the dataframe with
+the time-fixed predictors including:</p>
+<ul>
+<li><strong>id</strong> the unique patient identifier;</li>
+<li><strong>age</strong>, <strong>drug</strong> and <strong>sex</strong>
+predictors measured at enrollment.</li>
+</ul>
+<p>Be careful to define the right nature of the predictors, in
+particular for <strong>drug</strong> and <strong>sex</strong> as
+discrete predictors using <code>as.factor()</code> function. You can
+also verify the nature of the predictors using <code>str()</code>
+function.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build predictors objects</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>timeData_train <span class="ot">&lt;-</span> pbc2_train[,<span class="fu">c</span>(<span class="st">&quot;id&quot;</span>,<span class="st">&quot;time&quot;</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                                <span class="st">&quot;serBilir&quot;</span>,<span class="st">&quot;SGOT&quot;</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                                <span class="st">&quot;albumin&quot;</span>,<span class="st">&quot;alkaline&quot;</span>)]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>fixedData_train <span class="ot">&lt;-</span> <span class="fu">unique</span>(pbc2_train[,<span class="fu">c</span>(<span class="st">&quot;id&quot;</span>,<span class="st">&quot;age&quot;</span>,<span class="st">&quot;drug&quot;</span>,<span class="st">&quot;sex&quot;</span>)])</span></code></pre></div>
+</div>
+<div id="define-association-for-each-longitudinal-predictor" class="section level3">
+<h3>Define association for each longitudinal predictor</h3>
+<p>The first step is to build the random forest using
+<code>DynForest()</code> function. We need to define the association of
+each longitudinal predictors through a list containing the fixed and
+random formula (defined with <code>lcmm</code> package). To get more
+flexible association, splines are allowed in formula using
+<code>splines</code> package.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create object with longitudinal association for each predictor</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>timeVarModel <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">serBilir =</span> <span class="fu">list</span>(<span class="at">fixed =</span> serBilir <span class="sc">~</span> time,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">random =</span> <span class="sc">~</span> time),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">SGOT =</span> <span class="fu">list</span>(<span class="at">fixed =</span> SGOT <span class="sc">~</span> time <span class="sc">+</span> <span class="fu">I</span>(time<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">random =</span> <span class="sc">~</span> time <span class="sc">+</span> <span class="fu">I</span>(time<span class="sc">^</span><span class="dv">2</span>)),</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">albumin =</span> <span class="fu">list</span>(<span class="at">fixed =</span> albumin <span class="sc">~</span> time,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">random =</span> <span class="sc">~</span> time),</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">alkaline =</span> <span class="fu">list</span>(<span class="at">fixed =</span> alkaline <span class="sc">~</span> time,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">random =</span> <span class="sc">~</span> time))</span></code></pre></div>
+</div>
+<div id="build-outcome-object" class="section level3">
+<h3>Build outcome object</h3>
+<p>The outcome of interest is defined using a list containing:</p>
+<ul>
+<li><strong>type</strong> the nature of the outcome;</li>
+<li><strong>Y</strong> the outcome with the patients identifier;</li>
+<li><strong>type</strong> should be chosen among <code>surv</code>,
+<code>scalar</code> or <code>factor</code> for survival, continuous or
+discrete outcome, respectively.</li>
+</ul>
+<p>For this illustration, we choose <code>surv</code> as the type of
+outcome. <strong>Y</strong> is defined with:</p>
+<ul>
+<li><strong>id</strong> the unique patient identifier;</li>
+<li><strong>years</strong> the time-to-event data;</li>
+<li><strong>event</strong> the event indicator.</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build outcome object</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">type =</span> <span class="st">&quot;surv&quot;</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">Y =</span> <span class="fu">unique</span>(pbc2_train[,<span class="fu">c</span>(<span class="st">&quot;id&quot;</span>,<span class="st">&quot;years&quot;</span>,<span class="st">&quot;event&quot;</span>)]))</span></code></pre></div>
+</div>
+<div id="build-the-random-survival-forest" class="section level3">
+<h3>Build the random survival forest</h3>
+<p>To execute <code>DynForest()</code> function, several arguments are
+mandatory:</p>
+<ul>
+<li><code>timeData</code> the longitudinal dataset;</li>
+<li><code>fixedData</code> the time-fixed dataset;</li>
+<li><code>timeVar</code> the name of time variable;</li>
+<li><code>idVar</code> the patient identifier variable;</li>
+<li><code>timeVarModel</code> the list with the association for each
+longitidunal predictors;</li>
+<li><code>Y</code> the list for the outcome.</li>
+</ul>
+<p>In a survival context with multiple events, it is also necessary to
+specify the event of interest with the argument <code>cause</code>.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build the random forest</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>res_dyn <span class="ot">&lt;-</span> <span class="fu">DynForest</span>(<span class="at">timeData =</span> timeData_train, <span class="at">fixedData =</span> fixedData_train,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">timeVar =</span> <span class="st">&quot;time&quot;</span>, <span class="at">idVar =</span> <span class="st">&quot;id&quot;</span>, <span class="at">timeVarModel =</span> timeVarModel,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">ntree =</span> <span class="dv">200</span>, <span class="at">nodesize =</span> <span class="dv">5</span>, <span class="at">minsplit =</span> <span class="dv">5</span>, <span class="at">cause =</span> <span class="dv">2</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">Y =</span> Y, <span class="at">seed =</span> <span class="dv">1234</span>)</span></code></pre></div>
+<p>Many others arguments could be used in <code>DynForest()</code>
+function. Among them, <code>ntree</code>, <code>mtry</code>,
+<code>nodesize</code> and <code>minsplit</code> are hyperparameters
+which have been arbitrarily chosen for the illustration. However, these
+hyperparameters should be tuned to improve the prediction performance of
+the random forest. <code>seed</code> argument could be used to reproduce
+the same random forest and <code>ncores</code> to define the number of
+CPU cores used by the function. By default, <code>ncores</code> is fixed
+to the total number of cores minus 1.</p>
+<p><code>DynForest()</code> function returns an object of class
+<code>DynForest</code>. Among the returned objects, <code>$rf</code>
+provides all information about the trees, especially
+<code>$V_split</code> element on the split. The split detail for the
+tree 1 could be given with the following code:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(res_dyn<span class="sc">$</span>rf[,<span class="dv">1</span>]<span class="sc">$</span>V_split)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(res_dyn<span class="sc">$</span>rf[,<span class="dv">1</span>]<span class="sc">$</span>V_split)</span></code></pre></div>
+<p>The table is sorted by the node/leaf identifier
+(<strong>num_noeud</strong> column) with each row represents a
+node/leaf. Each column provides information about the splits:</p>
+<ul>
+<li><strong>type</strong> the nature of the predictor
+(<code>Curve</code>, <code>Scalar</code> or <code>Factor</code>) if the
+node was split, <code>Leaf</code> otherwise;</li>
+<li><strong>var_split</strong> the predictor number used for the
+split;</li>
+<li><strong>var_summary</strong> the predictor summary number used for
+the split;</li>
+<li><strong>threshold</strong> the threshold used for the split (only
+with <code>Curve</code> and <code>Scalar</code>);</li>
+<li><strong>N</strong> the number of subject in the node/leaf;</li>
+<li><strong>Nevent</strong> the number of event of interest in the
+node/leaf (only with survival outcome);</li>
+<li><strong>depth</strong> the depth level of the node/leaf.</li>
+</ul>
+<p>For instance for the interpretation of the node split, the subjects
+were split at node 1 using the first random-effect (<span class="math inline">\(\texttt{var_summary} = 1\)</span>) of the third
+<code>Curve</code> predictor (<span class="math inline">\(\texttt{var_split} = 3\)</span>) with <span class="math inline">\(\texttt{threshold} = -0.2199\)</span>. The
+predictor name can be found using the predictor number in
+<code>timeData</code> and <code>fixedData</code> datasets. Therefore,
+the subjects at node 1 with <strong>albumin</strong> values below to
+-0.2199 drop in the node 2, otherwise in the node 3. Another example
+with the leaves, 4 subjects are included in the node 192, and among them
+2 subjects has the event of interest. Estimated cumulative incidence
+function (CIF) are provided using <code>$Y_pred</code> element of
+<code>$rf</code>. <code>$Y_pred</code> is a list containing the CIF for
+every causes for each time of interest. For instance, the CIF of the
+cause of interest for leaf 192 can be displayed using the following
+code:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display CIF for cause of interest</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(res_dyn<span class="sc">$</span>rf[,<span class="dv">1</span>]<span class="sc">$</span>Y_pred[[<span class="dv">192</span>]]<span class="sc">$</span><span class="st">`</span><span class="at">2</span><span class="st">`</span>, <span class="at">type =</span> <span class="st">&quot;l&quot;</span>, <span class="at">col =</span> <span class="st">&quot;red&quot;</span>, </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">&quot;Years&quot;</span>, <span class="at">ylab =</span> <span class="st">&quot;CIF&quot;</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))</span></code></pre></div>
+</div>
+<div id="out-of-bag-error" class="section level3">
+<h3>Out-Of-Bag error</h3>
+<p>The Out-Of-Bag error (OOB) is computed using
+<code>compute_OOBerror()</code> function. In addition to
+<code>DynForest</code> object, <code>compute_OOBerror()</code> returns
+the OOB error by individual (<code>$xerror</code>) or by tree
+(<code>$oob.err</code>). The overall OOB error for the random forest is
+obtained by averaging the OOB error (by individual or tree), also given
+using the <code>summary()</code> function. In a survival context, the
+OOB error is evaluated using Integrated Brier Score from 0 to the
+maximum time event. The range time could be modified using
+<code>IBS.min</code> and <code>IBS.max</code> arguments to define the
+minimum and maximum, respectively. To improve the prediction ability of
+the random forest, we want to minimize the OOB error. This could be done
+by tuning the hyperparameters.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute OOB error</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>res_dyn_OOB <span class="ot">&lt;-</span> <span class="fu">compute_OOBerror</span>(<span class="at">DynForest_obj =</span> res_dyn)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get summary</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(res_dyn_OOB)</span></code></pre></div>
+</div>
+<div id="predict-the-risk-on-new-subjects" class="section level3">
+<h3>Predict the risk on new subjects</h3>
+<p>In this step, we want to predict the CIF for new subjects using the
+estimated random forest. Dynamic predictions could be computed by fixing
+a landmark time where the longitudinal data will be censored at this
+time. For the illustration, we only select the subjects still at risk at
+4 years. Then, we build the data for those subjects and we predict the
+cumulative incidence function (CIF) using <code>predict()</code>
+function as follows:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build data for prediction</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>id_pred <span class="ot">&lt;-</span> <span class="fu">unique</span>(pbc2_pred<span class="sc">$</span>id[<span class="fu">which</span>(pbc2_pred<span class="sc">$</span>years<span class="sc">&gt;</span><span class="dv">4</span>)])</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>pbc2_pred <span class="ot">&lt;-</span> pbc2_pred[<span class="fu">which</span>(pbc2_pred<span class="sc">$</span>id<span class="sc">%in%</span>id_pred),]</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>timeData_pred <span class="ot">&lt;-</span> pbc2_pred[,<span class="fu">c</span>(<span class="st">&quot;id&quot;</span>, <span class="st">&quot;time&quot;</span>, <span class="st">&quot;serBilir&quot;</span>, <span class="st">&quot;SGOT&quot;</span>, <span class="st">&quot;albumin&quot;</span>, <span class="st">&quot;alkaline&quot;</span>)]</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>fixedData_pred <span class="ot">&lt;-</span> <span class="fu">unique</span>(pbc2_pred[,<span class="fu">c</span>(<span class="st">&quot;id&quot;</span>,<span class="st">&quot;age&quot;</span>,<span class="st">&quot;drug&quot;</span>,<span class="st">&quot;sex&quot;</span>)])</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Prediction step</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>pred_dyn <span class="ot">&lt;-</span> <span class="fu">predict</span>(<span class="at">object =</span> res_dyn, </span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">timeData =</span> timeData_pred, <span class="at">fixedData =</span> fixedData_pred,</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>                    <span class="at">idVar =</span> <span class="st">&quot;id&quot;</span>, <span class="at">timeVar =</span> <span class="st">&quot;time&quot;</span>,</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>                    <span class="at">t0 =</span> <span class="dv">4</span>)</span></code></pre></div>
+<p><code>timeData</code>, <code>fixedData</code>, <code>idVar</code> and
+<code>timeVar</code> are the same arguments as detailed in the
+<code>DynForest()</code> function. In addition to these arguments, we
+also have:</p>
+<ul>
+<li><code>object</code> the <code>DynForest</code> object resulting from
+<code>DynForest()</code> function;</li>
+<li><code>t0</code> the landmark time (unnecessary in the absence of
+longitudinal predictors).</li>
+</ul>
+<p><code>predict()</code> function provides multiple elements:</p>
+<ul>
+<li><code>pred_indiv</code> a table with the prediction for each subject
+in rows and times in columns;</li>
+<li><code>pred_leaf</code> a table with the predict leaf for each tree
+in rows and subjects in columns;</li>
+<li><code>times</code> a vector of times where the predictions are
+computed;</li>
+<li><code>t0</code> the landmark time.</li>
+</ul>
+<p><code>plot_CIF()</code> function allows to display the CIF of the
+event of interest for given subjects. For instance, we compare the CIF
+from the landmark time for the subjects 102 and 260.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_CIF</span>(<span class="at">DynForestPred_obj =</span> pred_dyn,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>         <span class="at">id =</span> <span class="fu">c</span>(<span class="dv">102</span>, <span class="dv">260</span>))</span></code></pre></div>
+</div>
+<div id="explore-the-most-predictive-variables" class="section level3">
+<h3>Explore the most predictive variables</h3>
+<div id="vimp" class="section level4">
+<h4>VIMP</h4>
+<p>The main objective of the random forest is to predict an outcome. But
+sometimes, we can also be interested to explore the most predictive
+variables. The VIMP statistic can be computed using
+<code>compute_VIMP()</code> function. In addition to
+<code>DynForest</code> object, this function also returns the VIMP
+statistic for each predictor with <code>$Importance</code> argument.
+These results could also be displayed using <code>plot_VIMP()</code>
+function.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute VIMP statistic</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>res_dyn_VIMP <span class="ot">&lt;-</span> <span class="fu">compute_VIMP</span>(<span class="at">DynForest_obj =</span> res_dyn_OOB)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot VIMP statistic</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_VIMP</span>(res_dyn_VIMP)</span></code></pre></div>
+<p>We found that the most predictive variables are
+<strong>serBilir</strong> and <strong>albumin</strong> with the largest
+VIMP.</p>
+</div>
+<div id="gvimp" class="section level4">
+<h4>gVIMP</h4>
+<p>To evaluate the VIMP statistic for a group of several predictors, the
+gVIMP statistic can be computed through the <code>compute_gVIMP()</code>
+function. This function has the <code>group</code> argument to define
+the group of predictors through a list. For instance, with two groups of
+predictors (named <strong>group1</strong> and *<strong>group2</strong>),
+the gVIMP statistic is computed using the following code:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define groups</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>group <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">group1 =</span> <span class="fu">c</span>(<span class="st">&quot;serBilir&quot;</span>,<span class="st">&quot;SGOT&quot;</span>),</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">group2 =</span> <span class="fu">c</span>(<span class="st">&quot;albumin&quot;</span>,<span class="st">&quot;alkaline&quot;</span>))</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute gVIMP statistic</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>res_dyn_gVIMP <span class="ot">&lt;-</span> <span class="fu">compute_gVIMP</span>(<span class="at">DynForest_obj =</span> res_dyn_OOB,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>                               <span class="at">group =</span> group)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot gVIMP statistic</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_gVIMP</span>(res_dyn_gVIMP)</span></code></pre></div>
+<p>Similar as VIMP statistic, the gVIMP results could also be displayed
+using <code>plot_gVIMP()</code> function. The figure indicates most
+predictive ability with the <strong>group1</strong>. We also observe
+that the gVIMP for <strong>group2</strong> is lower than the sum of the
+VIMP of the two predictors from this group (<strong>albumin</strong> and
+<strong>alkaline</strong>). This figure shows how it could be relevant
+to compute the gVIMP statistic to consider the predictive ability of a
+group.</p>
+<p>To compute the gVIMP statistic, the groups can be defined regardless
+of the number of predictors. However, the comparition between the groups
+could be harder when their size are differents.</p>
+</div>
+<div id="average-minimal-depth" class="section level4">
+<h4>Average minimal depth</h4>
+<p>To go further in the understanding of the tree building process, the
+<code>var_depth()</code> function extracts usefull information about the
+average minimal depth by feature (<code>$min_depth</code>), a table with
+the minimal depth for each feature in row and each tree in column
+(<code>$var_node_depth</code>), a table with the number of times that
+the feature is used for splitting for each feature in row and each tree
+in column (<code>$var_count</code>). From the <code>var_depth()</code>
+object, <code>plot_mindepth()</code> function allows to plot the
+distribution of the average minimal depth across the trees.
+<code>plot_level</code> argument defines how the average minimal depth
+is plotted, by predictor or feature.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract tree building information</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>depth_dyn <span class="ot">&lt;-</span> <span class="fu">var_depth</span>(res_dyn)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot average minimal depth by predictor</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_mindepth</span>(<span class="at">var_depth_obj =</span> depth_dyn,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">plot_level =</span> <span class="st">&quot;predictor&quot;</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot average minimal depth by feature</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_mindepth</span>(<span class="at">var_depth_obj =</span> depth_dyn,</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">plot_level =</span> <span class="st">&quot;feature&quot;</span>)</span></code></pre></div>
+<p>The distribution of the minimal depth level are displayed by
+predictor and feature. Minimal depth level should always be interpreted
+with the number of trees where the predictor/feature is found. For
+instance, we observe that <strong>serBilir</strong> and
+<strong>albumin</strong> have the lowest minimal depth, indicating these
+predictors are used to split the subjects at early stage in 200 out of
+200 trees, i.e 100%. Indeed, in particular scenarios, we might observe
+lower minimal depth level with few trees used. That situation can
+occured due to the randomness of the method, especially when
+<code>mtry</code> hyperparameter is close to 1 or <code>ntree</code> is
+not enough large.</p>
+<p>The minimal depth level by feature provides more advanced details
+about the tree building process. For instance, we can see that the first
+random-effect (indicating by bi0 on the graph) for
+<strong>serBilir</strong> and <strong>albumin</strong> are the earliest
+features used on 200 and 199 out of 200 trees, respectively.</p>
+<p>Knowing that the number of trees where the predictor/feature is found
+depends on <code>mtry</code> hyperparameter, the minimal depth could
+also be computed on the random forest with <code>mtry</code> chosen at
+his maximum.</p>
+</div>
+</div>
+<div id="guidelines-to-tune-the-hyperparameters" class="section level3">
+<h3>Guidelines to tune the hyperparameters</h3>
+<p>The predictive performance of the random forest strongly depends on
+the hyperparameters <code>mtry</code>, <code>nodesize</code> and
+<code>minsplit</code>, and should therefore be chosen thoroughly.
+<code>nodesize</code> and <code>minsplit</code> hyperparameters control
+the tree depth, and we want trees deep enough to ensure that the
+predictions are not biased. By default in <code>DynForest()</code>
+function, we fixed <span class="math inline">\(\texttt{nodesize} =
+1\)</span> and <span class="math inline">\(\texttt{minsplit} =
+2\)</span>, being the minimum. However, with a large number of
+individuals, the depth tree could be slighty decreased to reduce the
+computation time.</p>
+<p><code>mtry</code> hyperparameter defines the number of predictors
+randomly drawn at each node. It controls the correlation between the
+trees. By default, we chose <code>mtry</code> equals to the square root
+of the number of predictors. However, this hyperparameter should be
+carefully tuned with the possible values between 1 and the number of
+predictors. Indeed, the predictive performance of the random forest is
+related to this hyperparameter. In the illustration, we tuned
+<code>mtry</code> for every possible values (1 to 7).</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>err.OOB <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="st">&quot;numeric&quot;</span>, <span class="dv">7</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>){</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(i)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  res_dyn_mtry <span class="ot">&lt;-</span> <span class="fu">DynForest</span>(<span class="at">timeData =</span> timeData_train, <span class="at">fixedData =</span> fixedData_train,</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>                            <span class="at">timeVar =</span> <span class="st">&quot;time&quot;</span>, <span class="at">idVar =</span> <span class="st">&quot;id&quot;</span>, </span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>                            <span class="at">timeVarModel =</span> timeVarModel, <span class="at">Y =</span> Y,</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>                            <span class="at">ntree =</span> <span class="dv">200</span>, <span class="at">mtry =</span> i, <span class="at">nodesize =</span> <span class="dv">2</span>, <span class="at">minsplit =</span> <span class="dv">3</span>,</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>                            <span class="at">cause =</span> <span class="dv">2</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  res_dyn_mtry_OOB <span class="ot">&lt;-</span> <span class="fu">compute_OOBerror</span>(<span class="at">DynForest_obj =</span> res_dyn_mtry)</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  err.OOB[i] <span class="ot">&lt;-</span> <span class="fu">mean</span>(res_dyn_mtry_OOB<span class="sc">$</span>xerror, <span class="at">na.rm =</span> T)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">mtry =</span> <span class="fu">seq</span>(<span class="dv">7</span>), <span class="at">OOB.error =</span> err.OOB), <span class="fu">aes</span>(<span class="at">x =</span> mtry, <span class="at">y =</span> OOB.error)) <span class="sc">+</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">&quot;red&quot;</span>, <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;OOB error&quot;</span>) <span class="sc">+</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code></pre></div>
+<p>The figure displays the evolution of the OOB error according to
+<code>mtry</code> hyperparameter. We can see on this figure large OOB
+error difference according to <code>mtry</code> hyperparameter. In
+particular, we observe the worst predictive performance for lower
+values, then simular results with higher values with an optimal value
+(i.e. with the lowest OOB error) where <span class="math inline">\(\texttt{mtry} = 7\)</span>. This graph reflects
+how it is crucial to carefully tuned this hyperparameter.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
