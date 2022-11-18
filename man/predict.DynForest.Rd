@@ -15,7 +15,7 @@
 )
 }
 \arguments{
-\item{object}{\code{DynForest} or \code{DynForest_OOB} object containing the dynamic random forest used on train data}
+\item{object}{\code{DynForest} object containing the dynamic random forest used on train data}
 
 \item{timeData}{A data.frame containing the id and time measurements variables and the time-dependent predictors.}
 
@@ -38,6 +38,12 @@ Prediction using dynamic random forests
 \examples{
 \donttest{
 data(pbc2)
+
+# Get Gaussian distribution for longitudinal predictors
+pbc2$serBilir <- log(pbc2$serBilir)
+pbc2$SGOT <- log(pbc2$SGOT)
+pbc2$albumin <- log(pbc2$albumin)
+pbc2$alkaline <- log(pbc2$alkaline)
 
 # Sample 100 subjects
 set.seed(1234)

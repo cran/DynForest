@@ -4,13 +4,7 @@
 \alias{compute_OOBerror}
 \title{Compute the Out-Of-Bag error (OOB error)}
 \usage{
-compute_OOBerror(
-  DynForest_obj,
-  IBS.min = 0,
-  IBS.max = NULL,
-  ncores = NULL,
-  verbose = TRUE
-)
+compute_OOBerror(DynForest_obj, IBS.min = 0, IBS.max = NULL, ncores = NULL)
 }
 \arguments{
 \item{DynForest_obj}{\code{DynForest} object containing the dynamic random forest used on train data}
@@ -20,14 +14,12 @@ compute_OOBerror(
 \item{IBS.max}{(Only with survival outcome) Maximal time to compute the Integrated Brier Score. Default value is set to the maximal time-to-event found.}
 
 \item{ncores}{Number of cores used to grow trees in parallel. Default value is the number of cores of the computer-1.}
-
-\item{verbose}{A logical controlling the function progress. Default is \code{TRUE}}
 }
 \value{
-compute_OOBerror() function return a list with the following elements:\tabular{ll}{
+\code{compute_OOBerror()} function return a list with the following elements:\tabular{ll}{
 \code{data} \tab A list containing the data used to grow the trees \cr
 \tab \cr
-\code{rf} \tab A table with each tree in column. Provide multiple charactistics about the tree building \cr
+\code{rf} \tab A table with each tree in column. Provide multiple characteristics about the tree building \cr
 \tab \cr
 \code{type} \tab Outcome type \cr
 \tab \cr
@@ -37,13 +29,11 @@ compute_OOBerror() function return a list with the following elements:\tabular{l
 \tab \cr
 \code{causes} \tab A numeric vector containing the causes indicator \cr
 \tab \cr
-\code{Inputs} \tab A list of 3 elements: \code{Curve}, \code{Scalar} and \code{Factor}. Each element contains the names of the predictors \cr
+\code{Inputs} \tab A list of 3 elements: \code{Longitudinal}, \code{Numeric} and \code{Factor}. Each element contains the names of the predictors \cr
 \tab \cr
-\code{Curve.model} \tab A list of longitudinal markers containing the formula used for modeling in the random forest \cr
+\code{Longitudinal.model} \tab A list of longitudinal markers containing the formula used for modeling in the random forest \cr
 \tab \cr
 \code{param} \tab A list containing the hyperparameters \cr
-\tab \cr
-\code{xerror} \tab A numeric vector containing the OOB error for each tree \cr
 \tab \cr
 \code{oob.err} \tab A numeric vector containing the OOB error for each subject \cr
 \tab \cr
@@ -58,6 +48,12 @@ Compute the Out-Of-Bag error (OOB error)
 \examples{
 \donttest{
 data(pbc2)
+
+# Get Gaussian distribution for longitudinal predictors
+pbc2$serBilir <- log(pbc2$serBilir)
+pbc2$SGOT <- log(pbc2$SGOT)
+pbc2$albumin <- log(pbc2$albumin)
+pbc2$alkaline <- log(pbc2$alkaline)
 
 # Sample 100 subjects
 set.seed(1234)

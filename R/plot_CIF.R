@@ -13,6 +13,12 @@
 #' \donttest{
 #' data(pbc2)
 #'
+#' # Get Gaussian distribution for longitudinal predictors
+#' pbc2$serBilir <- log(pbc2$serBilir)
+#' pbc2$SGOT <- log(pbc2$SGOT)
+#' pbc2$albumin <- log(pbc2$albumin)
+#' pbc2$alkaline <- log(pbc2$alkaline)
+#'
 #' # Sample 100 subjects
 #' set.seed(1234)
 #' id <- unique(pbc2$id)
@@ -65,9 +71,9 @@
 #'                     idVar = "id", timeVar = "time",
 #'                     t0 = 4)
 #'
-#' # Display CIF for subjects 102 and 260
+#' # Display CIF for subjects 26 and 110
 #' plot_CIF(DynForestPred_obj = pred_dyn,
-#'          id = c(102, 260))
+#'          id = c(26, 110))
 #' }
 plot_CIF <- function(DynForestPred_obj, id = NULL){
 
