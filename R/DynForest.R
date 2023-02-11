@@ -31,8 +31,9 @@
 #'
 #' FUTUR IMPLEMENTATIONS:
 #' - Continuous longitudinal outcome
+#' - Functional data analysis
 #'
-#' @return DynForest function return a list with the following elements:\tabular{ll}{
+#' @return DynForest function returns a list with the following elements:\tabular{ll}{
 #'    \code{data} \tab A list containing the data used to grow the trees \cr
 #'    \tab \cr
 #'    \code{rf} \tab A table with each tree in column. Provide multiple characteristics about the tree building \cr
@@ -54,7 +55,7 @@
 #'    \code{comput.time} \tab Computation time \cr
 #' }
 #'
-#' @author Anthony Devaux (\email{anthony.devaux@@u-bordeaux.fr})
+#' @author Anthony Devaux (\email{anthony.devauxbarault@@gmail.com})
 #'
 #' @references Devaux A., Helmer C., Dufouil C., Genuer R., Proust-Lima C. (2022). Random survival forests for competing risks with multivariate longitudinal endogenous covariates. arXiv <doi: 10.48550/arXiv.2208.05801>
 #'
@@ -152,6 +153,18 @@ DynForest <- function(timeData = NULL, fixedData = NULL,
       Factor <- list(type = "Factor",
                      X = subset(fixedData, select = names(var_fact[which(var_fact==T)])),
                      id = fixedData[,idVar])
+
+      num_cat <- apply(Factor$X, 2, FUN = function(x) {
+        return(length(unique(x)))
+      })
+
+      var_cat_over10 <- names(num_cat)[which(num_cat>10)]
+
+      if (length(var_cat_over10)>0){
+        stop("'DynForest' function cannot actually support more than 10 categories for factor predictors! Please fix the following factor predictors: ",
+             paste(var_cat_over10, collapse = " / "))
+      }
+
     }else{
       Factor <- NULL
     }
@@ -164,6 +177,9 @@ DynForest <- function(timeData = NULL, fixedData = NULL,
       Numeric <- NULL
     }
 
+  }else{
+    Numeric <- NULL
+    Factor <- NULL
   }
 
   Inputs <- read.Xarg(c(Longitudinal,Numeric,Factor))
@@ -177,9 +193,16 @@ DynForest <- function(timeData = NULL, fixedData = NULL,
             Y = Y$Y)
 
   if (Y$type=="surv"){
-    Y$Y <- survival::Surv(Y$Y[,2], factor(Y$Y[,3]))
-    Y$comp <- ifelse(length(unique(Y$Y[,2]))>2, TRUE, FALSE)
-    causes <- sort(unique(Y$Y[which(Y$Y[,2]!=0),2]))
+
+    causes <- sort(unique(Y$Y[which(Y$Y[,3]!=0),3]))
+
+    if (length(unique(Y$Y[,3]))>2){
+      Y$Y <- survival::Surv(Y$Y[,2], factor(Y$Y[,3]))
+      Y$comp <- TRUE
+    }else{
+      Y$Y <- survival::Surv(Y$Y[,2], Y$Y[,3])
+      Y$comp <- FALSE
+    }
   }else{
     Y$Y <- subset(Y$Y, select = -get(idVar), drop = TRUE)
   }
@@ -200,7 +223,8 @@ DynForest <- function(timeData = NULL, fixedData = NULL,
 
   ######### DynTree #########
 
-  rf <-  rf_shape_para(Longitudinal = Longitudinal, Numeric = Numeric, Factor = Factor, Y = Y,
+  rf <-  rf_shape_para(Longitudinal = Longitudinal, Numeric = Numeric, Factor = Factor,
+                       timeVar = timeVar, Y = Y,
                        mtry = mtry, ntree = ntree, ncores = ncores,
                        nsplit_option = nsplit_option,
                        nodesize = nodesize, minsplit = minsplit,
@@ -212,18 +236,18 @@ DynForest <- function(timeData = NULL, fixedData = NULL,
 
   if (Y$type == "surv"){
     out <- list(data = list(Longitudinal = Longitudinal, Factor = Factor, Numeric = Numeric, Y = Y),
-                rf = rf$rf, type = rf$type, times = sort(unique(c(0,Y$Y[,1]))), cause = cause, causes = causes,
+                rf = rf$rf, type = rf$type, timeVar = timeVar, times = sort(unique(c(0,Y$Y[,1]))), cause = cause, causes = causes,
                 Inputs = list(Longitudinal = names(Longitudinal$X), Numeric = names(Numeric$X), Factor = names(Factor$X)),
                 Longitudinal.model = Longitudinal$model, param = list(mtry = mtry, nodesize = nodesize,
                                                                       minsplit = minsplit, ntree = ntree),
-                comput.time = Sys.time() - debut)
+                ncores = ncores, comput.time = Sys.time() - debut)
   }else{
     out <- list(data = list(Longitudinal = Longitudinal, Factor = Factor, Numeric = Numeric, Y = Y),
-                rf = rf$rf, type = rf$type, levels = Ylevels,
+                rf = rf$rf, type = rf$type, timeVar = timeVar, levels = Ylevels,
                 Inputs = list(Longitudinal = names(Longitudinal$X), Numeric = names(Numeric$X), Factor = names(Factor$X)),
                 Longitudinal.model = Longitudinal$model, param = list(mtry = mtry, nodesize = nodesize,
                                                                       minsplit = NULL, ntree = ntree),
-                comput.time = Sys.time() - debut)
+                ncores = ncores, comput.time = Sys.time() - debut)
   }
 
   class(out) <- c("DynForest")

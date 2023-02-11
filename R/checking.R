@@ -94,13 +94,28 @@ checking <- function(DynForest_obj = NULL,
       stop("'Y' is missing!")
     }else{
       if (!inherits(Y, "list")){
-        stop("'Y' should be a list object!")
+        stop("'Y' should be a 'list' object!")
       }
       if (!all(names(Y%in%c("type","Y")))){
-        stop("'Y' should be a list with type and Y elements!")
+        stop("'Y' should be a list with 'type' and 'Y' elements!")
       }
       if (!any(colnames(Y$Y)==idVar)){
         stop("'idVar' variable should be contained in Y!")
+      }
+      if (Y$type=="surv"){
+        if (!inherits(Y$Y[,3], "numeric")){
+          stop("The column in 'Y$Y' to provide the causes should be typed as numeric with 0 indicating no event!")
+        }
+      }
+      if (!is.null(fixedData)){
+        if (length(fixedData[,idVar])!=length(unique(Y$Y[,idVar]))){
+          stop("'fixedData' and 'Y$Y' should contain the same subjects!")
+        }
+      }
+      if (!is.null(timeData)){
+        if (length(unique(timeData[,idVar]))!=length(unique(Y$Y[,idVar]))){
+          stop("'timeData' and 'Y$Y' should contain the same subjects!")
+        }
       }
     }
   }

@@ -2,12 +2,12 @@
 % Please edit documentation in R/plot_CIF.R
 \name{plot_CIF}
 \alias{plot_CIF}
-\title{Plot the individual Cumulative Incidence Function (CIF) for the interest cause}
+\title{Plot the predictive individual Cumulative Incidence Function (CIF) for the interest cause}
 \usage{
 plot_CIF(DynForestPred_obj, id = NULL)
 }
 \arguments{
-\item{DynForestPred_obj}{An DynForestPred object from \code{predict()} function}
+\item{DynForestPred_obj}{A DynForestPred object from \code{predict()} function}
 
 \item{id}{Identifiers for the selected subjects}
 }
@@ -15,7 +15,7 @@ plot_CIF(DynForestPred_obj, id = NULL)
 Display the CIF for selected subjects
 }
 \description{
-Plot the individual Cumulative Incidence Function (CIF) for the interest cause
+Plot the predictive individual Cumulative Incidence Function (CIF) for the interest cause
 }
 \examples{
 \donttest{

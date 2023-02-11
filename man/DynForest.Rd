@@ -54,7 +54,7 @@ DynForest(
 \item{verbose}{A logical controlling the function progress. Default is \code{TRUE}}
 }
 \value{
-DynForest function return a list with the following elements:\tabular{ll}{
+DynForest function returns a list with the following elements:\tabular{ll}{
 \code{data} \tab A list containing the data used to grow the trees \cr
 \tab \cr
 \code{rf} \tab A table with each tree in column. Provide multiple characteristics about the tree building \cr
@@ -85,6 +85,7 @@ The function currently supports survival (competing or single event), continuous
 FUTUR IMPLEMENTATIONS:
 \itemize{
 \item Continuous longitudinal outcome
+\item Functional data analysis
 }
 }
 \examples{
@@ -141,5 +142,5 @@ Devaux A., Helmer C., Dufouil C., Genuer R., Proust-Lima C. (2022). Random survi
 \code{\link{summary.DynForest} \link{compute_OOBerror} \link{compute_VIMP} \link{compute_gVIMP} \link{predict.DynForest} \link{plot.DynForest}}
 }
 \author{
-Anthony Devaux (\email{anthony.devaux@u-bordeaux.fr})
+Anthony Devaux (\email{anthony.devauxbarault@gmail.com})
 }

@@ -1,15 +1,22 @@
 Package: DynForest
 Title: Random Forest with Multivariate Longitudinal Predictors
-Version: 1.1.0
+Version: 1.1.1
 Authors@R: 
-    person("Anthony", "Devaux", email = "anthony.devaux@u-bordeaux.fr", 
-    role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-8862-4218"))
+    c(
+    person("Anthony", "Devaux", email = "anthony.devauxbarault@gmail.com", 
+    role = c("aut", "cre"), comment = c(ORCID = "0000-0002-8862-4218")),
+    person("Robin", "Genuer", email = "robin.genuer@u-bordeaux.fr", 
+    role = c("aut"), comment = c(ORCID = "0000-0002-0981-3943")),
+    person("Cécile", "Proust-Lima", email = "cecile.proust-lima@u-bordeaux.fr", 
+    role = c("aut"), comment = c(ORCID = "0000-0002-9884-955X")),
+    person("Louis", "Capitaine",
+    role = c("aut"), comment = c(ORCID = "0000-0001-6800-2342"))
+    )
 Description: Based on random forest principle, 'DynForest' is able to include 
     multiple longitudinal predictors to provide individual predictions. 
     Longitudinal predictors are modeled through the random forest. The 
     methodology is fully described for a survival outcome in: 
-    Devaux, Helmer, Dufouil, Genuer & Proust-Lima (2022) 
+    Devaux, Helmer, Genuer & Proust-Lima (2022) 
     <doi: 10.48550/arXiv.2208.05801>.
 Imports: DescTools, cmprsk, doParallel, foreach, ggplot2, lcmm,
         methods, pbapply, pec, prodlim, stringr, survival, zoo
@@ -23,8 +30,11 @@ BugReports: https://github.com/anthonydevaux/DynForest/issues
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2022-11-14 09:34:01 UTC; antho
-Author: Anthony Devaux [aut, cre] (<https://orcid.org/0000-0002-8862-4218>)
-Maintainer: Anthony Devaux <anthony.devaux@u-bordeaux.fr>
+Packaged: 2023-02-10 22:27:01 UTC; antho
+Author: Anthony Devaux [aut, cre] (<https://orcid.org/0000-0002-8862-4218>),
+  Robin Genuer [aut] (<https://orcid.org/0000-0002-0981-3943>),
+  Cécile Proust-Lima [aut] (<https://orcid.org/0000-0002-9884-955X>),
+  Louis Capitaine [aut] (<https://orcid.org/0000-0001-6800-2342>)
+Maintainer: Anthony Devaux <anthony.devauxbarault@gmail.com>
 Repository: CRAN
-Date/Publication: 2022-11-19 00:10:02 UTC
+Date/Publication: 2023-02-11 07:10:10 UTC

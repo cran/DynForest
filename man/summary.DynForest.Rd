@@ -70,6 +70,3 @@ res_dyn_OOB <- compute_OOBerror(DynForest_obj = res_dyn, ncores = 2)
 summary(object = res_dyn_OOB)
 }
 }
-\author{
-Anthony Devaux (\email{anthony.devaux@u-bordeaux.fr})
-}
