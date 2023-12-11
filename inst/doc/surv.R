@@ -1,11 +1,11 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   eval = FALSE
 )
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  library("DynForest")
 #  set.seed(1234)
 #  id <- unique(pbc2$id)
@@ -14,13 +14,13 @@ knitr::opts_chunk$set(
 #  pbc2_train <- pbc2[id_row,]
 #  pbc2_pred <- pbc2[-id_row,]
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  timeData_train <- pbc2_train[,c("id","time",
 #                                  "serBilir","SGOT",
 #                                  "albumin","alkaline")]
 #  fixedData_train <- unique(pbc2_train[,c("id","age","drug","sex")])
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  timeVarModel <- list(serBilir = list(fixed = serBilir ~ time,
 #                                       random = ~ time),
 #                       SGOT = list(fixed = SGOT ~ time + I(time^2),
@@ -30,11 +30,11 @@ knitr::opts_chunk$set(
 #                       alkaline = list(fixed = alkaline ~ time,
 #                                       random = ~ time))
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  Y <- list(type = "surv",
 #            Y = unique(pbc2[,c("id","years","event")]))
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  res_dyn <- DynForest(timeData = timeData_train,
 #                       fixedData = fixedData_train,
 #                       timeVar = "time", idVar = "id",
@@ -42,7 +42,7 @@ knitr::opts_chunk$set(
 #                       ntree = 200, mtry = 3, nodesize = 2, minsplit = 3,
 #                       cause = 2, seed = 1234)
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  summary(res_dyn)
 #  
 #  DynForest executed with survival (competing risk) mode
@@ -76,7 +76,7 @@ knitr::opts_chunk$set(
 #  	Time difference of 3.000176 mins
 #  ----------------
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  head(res_dyn$rf[,1]$V_split)
 #  
 #            type id_node var_split feature   threshold   N Nevent depth
@@ -87,7 +87,7 @@ knitr::opts_chunk$set(
 #  5       Factor       5         1      NA          NA   8      8     3
 #  6 Longitudinal       6         3       2 -0.01010312  92     22     3
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  tail(res_dyn$rf[,1]$V_split)
 #  
 #             type id_node var_split feature threshold N Nevent depth
@@ -98,22 +98,22 @@ knitr::opts_chunk$set(
 #  52         Leaf     390        NA      NA        NA 2      1     9
 #  53         Leaf     391        NA      NA        NA 2      2     9
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  plot(res_dyn$rf[,1]$Y_pred[[192]]$`2`, type = "l", col = "red",
 #       xlab = "Years", ylab = "CIF", ylim = c(0,1))
 
-## ---- fig.cap = "Figure 1: Estimated cumulative incidence functions of death before transplantation for subject 104 over 9 trees.", eval = TRUE, echo = FALSE, out.width="70%"----
+## ----fig.cap = "Figure 1: Estimated cumulative incidence functions of death before transplantation for subject 104 over 9 trees.", eval = TRUE, echo = FALSE, out.width="70%"----
 knitr::include_graphics("Figures/DynForestRPaper_CIF.png")
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  res_dyn_OOB <- compute_OOBerror(DynForest_obj = res_dyn)
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  mean(res_dyn_OOB$oob.err)
 #  
 #  [1] 0.1238627
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  id_pred <- unique(pbc2_pred$id[which(pbc2_pred$years>4)])
 #  pbc2_pred_tLM <- pbc2_pred[which(pbc2_pred$id%in%id_pred),]
 #  timeData_pred <- pbc2_pred_tLM[,c("id","time",
@@ -126,28 +126,28 @@ knitr::include_graphics("Figures/DynForestRPaper_CIF.png")
 #                      idVar = "id", timeVar = "time",
 #                      t0 = 4)
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  plot_CIF(DynForestPred_obj = pred_dyn,
 #           id = c(102, 260))
 
-## ---- fig.cap = "Figure 2: Predicted cumulative incidence function for subjects 102 and 260 from landmark time of 4 years (represented by a dashed line).", eval = TRUE, echo = FALSE, out.width="70%"----
+## ----fig.cap = "Figure 2: Predicted cumulative incidence function for subjects 102 and 260 from landmark time of 4 years (represented by a dashed line).", eval = TRUE, echo = FALSE, out.width="70%"----
 knitr::include_graphics("Figures/DynForestR_predCIF.png")
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  res_dyn_VIMP <- compute_VIMP(DynForest_obj = res_dyn, seed = 123)
 #  plot(x = res_dyn_VIMP, PCT = TRUE)
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  group <- list(group1 = c("serBilir","SGOT"),
 #                group2 = c("albumin","alkaline"))
 #  res_dyn_gVIMP <- compute_gVIMP(DynForest_obj = res_dyn,
 #                                 group = group, seed = 123)
 #  plot(x = res_dyn_gVIMP, PCT = TRUE)
 
-## ---- fig.cap = "Figure 3: Using VIMP statistic (A), we observe that `serBilir` and `albumin` are the most predictive predictors. Using grouped-VIMP statistic (B), group1 (`serBilir` and `SGOT`) has more predictive ability than group2 (`albumin` and `alkaline`).", eval = TRUE, echo = FALSE, out.width="70%"----
+## ----fig.cap = "Figure 3: Using VIMP statistic (A), we observe that `serBilir` and `albumin` are the most predictive predictors. Using grouped-VIMP statistic (B), group1 (`serBilir` and `SGOT`) has more predictive ability than group2 (`albumin` and `alkaline`).", eval = TRUE, echo = FALSE, out.width="70%"----
 knitr::include_graphics("Figures/DynForestR_VIMP_gVIMP.png")
 
-## ---- eval = FALSE, echo = TRUE-----------------------------------------------
+## ----eval = FALSE, echo = TRUE------------------------------------------------
 #  res_dyn_max <- DynForest(timeData = timeData_train,
 #                           fixedData = fixedData_train,
 #                           timeVar = "time", idVar = "id",
@@ -158,9 +158,9 @@ knitr::include_graphics("Figures/DynForestR_VIMP_gVIMP.png")
 #  plot(x = depth_dyn, plot_level = "predictor")
 #  plot(x = depth_dyn, plot_level = "feature")
 
-## ---- fig.cap = "Figure 4: Average minimal depth level by predictor (A) and feature (B).", eval = TRUE, echo = FALSE, out.width="70%"----
+## ----fig.cap = "Figure 4: Average minimal depth level by predictor (A) and feature (B).", eval = TRUE, echo = FALSE, out.width="70%"----
 knitr::include_graphics("Figures/DynForestR_mindepth.png")
 
-## ---- fig.cap = "Figure 5: OOB error according to `mtry` hyperparameter. The optimal value was found for `mtry` = 7.", eval = TRUE, echo = FALSE, out.width="70%"----
+## ----fig.cap = "Figure 5: OOB error according to `mtry` hyperparameter. The optimal value was found for `mtry` = 7.", eval = TRUE, echo = FALSE, out.width="70%"----
 knitr::include_graphics("Figures/DynForestR_mtrytuned.png")
 

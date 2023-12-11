@@ -30,6 +30,7 @@ DynTree_surv <- function(Y, Longitudinal = NULL, Numeric = NULL, Factor = NULL,
   hist_nodes <- list()
   model_param <- list()
   model_init <- list()
+  conv_issue <- list()
   set.seed(seed) # set seed for bootstrap
   id_boot <- unique(sample(unique(Y$id), length(unique(Y$id)), replace=TRUE))
   boot <- id_boot
@@ -96,6 +97,8 @@ DynTree_surv <- function(Y, Longitudinal = NULL, Numeric = NULL, Factor = NULL,
       if (!is.null("Numeric")) wXNumeric <- which(Numeric_boot$id%in%unique(Y_boot$id[w]))
       if (!is.null("Factor")) wXFactor <- which(Factor_boot$id%in%unique(Y_boot$id[w]))
 
+      Y_current <- list(type=Y_boot$type, Y=Y_boot$Y[w], id=Y_boot$id[w], comp=Y$comp)
+
       if (length(unique(Y_boot$id[w]))>1 & imp_nodes[[current_leaves[i]]] >0){
 
         # Drawn mtry predictors
@@ -131,8 +134,6 @@ DynTree_surv <- function(Y, Longitudinal = NULL, Numeric = NULL, Factor = NULL,
           tirageFactor <- sample(1:ncol(Factor$X),length(which(variables=="Factor")))
           Factor_current <- list(type = Factor_boot$type, X=Factor_boot$X[wXFactor,tirageFactor, drop=FALSE], id=Factor_boot$id[wXFactor, drop=FALSE])
         }
-
-        Y_current <- list(type=Y_boot$type, Y=Y_boot$Y[w], id=Y_boot$id[w], comp=Y$comp)
 
         F_SPLIT <- data.frame(TYPE = character(), Impurity = numeric(), stringsAsFactors = FALSE)
         num_split <- 0
@@ -173,6 +174,8 @@ DynTree_surv <- function(Y, Longitudinal = NULL, Numeric = NULL, Factor = NULL,
                                data.frame(TYPE = "Longitudinal", Impurity = leaf_split_Longitudinal$impur,
                                           stringsAsFactors = FALSE),
                                all = T)
+
+              conv_issue[[current_node]] <- leaf_split_Longitudinal$conv_issue
               num_split <- num_split +1
             }
           }
@@ -330,7 +333,7 @@ DynTree_surv <- function(Y, Longitudinal = NULL, Numeric = NULL, Factor = NULL,
         rownames(V_split) <- seq(nrow(V_split))
       }
 
-      for (q in unique(id_leaf)){
+      for (q in unique(na.omit(id_leaf))){
         w <- which(id_leaf == q)
 
         datasurv <- data.frame(time_event = Y_boot$Y[w][,1], event = Y_boot$Y[w][,2])
@@ -363,7 +366,7 @@ DynTree_surv <- function(Y, Longitudinal = NULL, Numeric = NULL, Factor = NULL,
 
       return(list(leaves = id_leaf, idY = Y_boot$id, Ytype = Y_boot$type,
                   V_split = V_split, hist_nodes = hist_nodes,
-                  Y_pred = Y_pred, Y = Y, boot = boot,
+                  Y_pred = Y_pred, Y = Y, boot = boot, conv_issue = conv_issue,
                   model_param = model_param))
     }
   }
@@ -375,7 +378,7 @@ DynTree_surv <- function(Y, Longitudinal = NULL, Numeric = NULL, Factor = NULL,
     rownames(V_split) <- seq(nrow(V_split))
   }
 
-  for (q in unique(id_leaf)){
+  for (q in unique(na.omit(id_leaf))){
 
     w <- which(id_leaf == q)
 
@@ -409,6 +412,6 @@ DynTree_surv <- function(Y, Longitudinal = NULL, Numeric = NULL, Factor = NULL,
   }
 
   return(list(leaves = id_leaf, idY=Y_boot$id, Ytype = Y_boot$type, V_split = V_split,
-              hist_nodes = hist_nodes, Y_pred= Y_pred, Y = Y, boot = boot,
+              hist_nodes = hist_nodes, Y_pred= Y_pred, Y = Y, boot = boot, conv_issue = conv_issue,
               model_param = model_param))
 }

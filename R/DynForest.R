@@ -57,7 +57,9 @@
 #'
 #' @author Anthony Devaux (\email{anthony.devauxbarault@@gmail.com})
 #'
-#' @references Devaux A., Helmer C., Dufouil C., Genuer R., Proust-Lima C. (2022). Random survival forests for competing risks with multivariate longitudinal endogenous covariates. arXiv <doi: 10.48550/arXiv.2208.05801>
+#' @references
+#' - Devaux A., Helmer C., Genuer R., Proust-Lima C. (2023). Random survival forests with multivariate longitudinal endogenous covariates. SMMR <doi:10.1177/09622802231206477>
+#' - Devaux A., Proust-Lima C., Genuer R. (2023). Random Forests for time-fixed and time-dependent predictors: The DynForest R package. arXiv <doi:10.48550/arXiv.2302.02670>
 #'
 #' @seealso \code{\link{summary.DynForest} \link{compute_OOBerror} \link{compute_VIMP} \link{compute_gVIMP} \link{predict.DynForest} \link{plot.DynForest}}
 #'
@@ -115,7 +117,7 @@ DynForest <- function(timeData = NULL, fixedData = NULL,
                       nodesize = 1, minsplit = 2, cause = 1,
                       nsplit_option = "quantile",
                       ncores = NULL,
-                      seed = round(runif(1,0,10000)),
+                      seed = 1234,
                       verbose = TRUE){
 
   debut <- Sys.time()
@@ -132,6 +134,7 @@ DynForest <- function(timeData = NULL, fixedData = NULL,
 
   # Inputs
   if (!is.null(timeData)){
+    timeData <- timeData[order(timeData[,idVar], timeData[,timeVar]),]
     Longitudinal <- list(type = "Longitudinal",
                          X = subset(timeData, select = -c(get(idVar), get(timeVar))),
                          id = timeData[,idVar],
@@ -142,6 +145,8 @@ DynForest <- function(timeData = NULL, fixedData = NULL,
   }
 
   if (!is.null(fixedData)){
+
+    fixedData <- fixedData[order(fixedData[,idVar]),]
 
     var_fact <- sapply(subset(fixedData, select = -get(idVar)),
                        FUN = function(x) inherits(x, c("character","factor")))
@@ -188,6 +193,7 @@ DynForest <- function(timeData = NULL, fixedData = NULL,
   }
 
   # Outcome
+  Y$Y <- Y$Y[order(Y$Y[,idVar]),]
   Y <- list(type = Y$type,
             id = Y$Y[,idVar],
             Y = Y$Y)

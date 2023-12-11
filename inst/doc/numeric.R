@@ -1,11 +1,11 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   eval = FALSE
 )
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  timeData_train <- data_simu1[,c("id","time",
 #                                  paste0("marker",seq(6)))]
 #  timeVarModel <- lapply(paste0("marker",seq(6)),
@@ -19,11 +19,11 @@ knitr::opts_chunk$set(
 #                                          "cont_covar1","cont_covar2",
 #                                          "bin_covar1","bin_covar2")])
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  Y <- list(type = "numeric",
 #            Y = unique(data_simu1[,c("id","Y_res")]))
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  res_dyn <- DynForest(timeData = timeData_train,
 #                       fixedData = fixedData_train,
 #                       timeVar = "time", idVar = "id",
@@ -31,7 +31,7 @@ knitr::opts_chunk$set(
 #                       mtry = 10,
 #                       Y = Y, seed = 1234)
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  res_dyn_OOB <- compute_OOBerror(DynForest_obj = res_dyn)
 #  summary(res_dyn_OOB)
 #  
@@ -64,7 +64,7 @@ knitr::opts_chunk$set(
 #  	Time difference of 4.74484 mins
 #  ----------------
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  timeData_pred <- data_simu2[,c("id","time",
 #                                 paste0("marker",seq(6)))]
 #  fixedData_pred <- unique(data_simu2[,c("id","cont_covar1","cont_covar2",
@@ -74,17 +74,17 @@ knitr::opts_chunk$set(
 #                      fixedData = fixedData_pred,
 #                      idVar = "id", timeVar = "time")
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  head(pred_dyn$pred_indiv)
 #  
 #           1          2          3          4          5          6
 #   5.2117462 -1.2899651  0.8591368  1.5115133  5.2957749  7.9194240
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  depth_dyn <- var_depth(DynForest_obj = res_dyn)
 #  plot(x = depth_dyn, plot_level = "predictor")
 #  plot(x = depth_dyn, plot_level = "feature")
 
-## ---- fig.cap = "Figure 1: Average minimal depth level by predictor (A) and by feature (B).", eval = TRUE, echo = FALSE, out.width="70%"----
+## ----fig.cap = "Figure 1: Average minimal depth level by predictor (A) and by feature (B).", eval = TRUE, echo = FALSE, out.width="70%"----
 knitr::include_graphics("Figures/DynForestR_mindepth_scalar.png")
 

@@ -22,6 +22,7 @@ var_split_surv <- function(X, Y, timeVar = NULL, nsplit_option = "quantile",
   model_param <- list()
   threshold <- variable_summary <- rep(NA, ncol(X$X))
   impurete <- NULL
+  conv_issue <- NULL
 
   for (i in 1:ncol(X$X)){
 
@@ -94,30 +95,31 @@ var_split_surv <- function(X, Y, timeVar = NULL, nsplit_option = "quantile",
 
         if (is.null(model_output)){ # can occurred with Cholesky matrix inversion
 
-          model_output <- hlme(fixed = X$model[[i]]$fixed,
-                               random = X$model[[i]]$random,
-                               subject = "id", data = data_model,
-                               maxiter = 100,
-                               verbose = FALSE)
+          model_output <- tryCatch(hlme(fixed = X$model[[i]]$fixed,
+                                        random = X$model[[i]]$random,
+                                        subject = "id", data = data_model,
+                                        maxiter = 100,
+                                        verbose = FALSE),
+                                   error = function(e){ return(NULL) })
 
         }
 
       }else{
 
-        model_output <- hlme(fixed = X$model[[i]]$fixed,
-                             random = X$model[[i]]$random,
-                             subject = "id", data = data_model,
-                             maxiter = 100,
-                             verbose = FALSE)
+        model_output <- tryCatch(hlme(fixed = X$model[[i]]$fixed,
+                                      random = X$model[[i]]$random,
+                                      subject = "id", data = data_model,
+                                      maxiter = 100,
+                                      verbose = FALSE),
+                                 error = function(e){ return(NULL) })
 
       }
 
-      if (model_output$gconv[1]>1e-04 | model_output$gconv[2]>1e-04){ # convergence issue
-
+      if (model_output$gconv[1]>1e-04 | model_output$gconv[2]>1e-04 | is.null(model_output)){ # convergence issue
         impur[i] <- Inf
         split[[i]] <- Inf
+        conv_issue <- c(conv_issue, colnames(X$X)[i])
         next()
-
       }
 
       init[[colnames(X$X)[i]]] <- model_output$best
@@ -128,9 +130,8 @@ var_split_surv <- function(X, Y, timeVar = NULL, nsplit_option = "quantile",
                                stderr = tail(model_output$best, n = 1),
                                idea0 = model_output$idea0)
 
-      #RE <- predRE(model_param[[i]], X$model[[i]], data_model)$bi
-      RE <- model_output$predRE[order(match(model_output$predRE$id, Y$id)), -1]
-      rownames(RE) <- unique(Y$id)
+      # Random-effect dataframe with NA for subjects where RE cannot be computed
+      RE <- merge(unique(Y$id), model_output$predRE, all.x = T, by.x = "x", by.y = "id")[,-1]
 
       ###########################
 
@@ -152,7 +153,8 @@ var_split_surv <- function(X, Y, timeVar = NULL, nsplit_option = "quantile",
 
         if (!all(is.na(data_summaries[,i_sum]))){
 
-          nsplit <- ifelse(length(unique(data_summaries[,i_sum]))>10, 10, length(unique(data_summaries[,i_sum])))
+          nsplit <- ifelse(length(unique(na.omit(data_summaries[,i_sum])))>10,
+                           10, length(unique(na.omit(data_summaries[,i_sum]))))
 
           if (nsplit==1) {
             impurete_sum[i_sum] <- NA
@@ -318,6 +320,7 @@ var_split_surv <- function(X, Y, timeVar = NULL, nsplit_option = "quantile",
               variable_summary=ifelse(X$type=="Longitudinal", variable_summary[true_split], NA),
               threshold=ifelse(X$type=="Longitudinal"|X$type=="Numeric", threshold[true_split], NA),
               model_param=ifelse(X$type=="Longitudinal", list(model_param[[true_split]]), NA),
+              conv_issue=conv_issue,
               init = init,
               Pure=Pure))
 }
