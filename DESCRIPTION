@@ -1,6 +1,6 @@
 Package: DynForest
 Title: Random Forest with Multivariate Longitudinal Predictors
-Version: 1.1.2
+Version: 1.1.3
 Authors@R: 
     c(
     person("Anthony", "Devaux", email = "anthony.devauxbarault@gmail.com", 
@@ -30,11 +30,11 @@ BugReports: https://github.com/anthonydevaux/DynForest/issues
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2023-12-11 11:45:25 UTC; antho
+Packaged: 2024-03-22 11:18:00 UTC; antho
 Author: Anthony Devaux [aut, cre] (<https://orcid.org/0000-0002-8862-4218>),
   Robin Genuer [aut] (<https://orcid.org/0000-0002-0981-3943>),
   Cécile Proust-Lima [aut] (<https://orcid.org/0000-0002-9884-955X>),
   Louis Capitaine [aut] (<https://orcid.org/0000-0001-6800-2342>)
 Maintainer: Anthony Devaux <anthony.devauxbarault@gmail.com>
 Repository: CRAN
-Date/Publication: 2023-12-11 12:40:03 UTC
+Date/Publication: 2024-03-22 11:30:05 UTC

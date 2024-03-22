@@ -10,12 +10,14 @@
 #' @param ntree Number of trees to grow. Default value set to 200.
 #' @param mtry Number of candidate variables randomly drawn at each node of the trees. This parameter should be tuned by minimizing the OOB error.
 #' @param minsplit (Only with survival outcome) Minimal number of events required to split the node. Cannot be smaller than 2.
+#' @param cause (Only with competing events) Number indicates the event of interest.
 #'
 #' @keywords internal
 checking <- function(DynForest_obj = NULL,
                      timeData, fixedData,
                      idVar, timeVar, timeVarModel,
-                     Y, ntree = 200, mtry = 1, nodesize = 1, minsplit = 2){
+                     Y, ntree = 200, mtry = 1, nodesize = 1, minsplit = 2,
+                     cause = 1){
 
   # global argument checking
   if (!inherits(idVar, "character")){
@@ -55,8 +57,8 @@ checking <- function(DynForest_obj = NULL,
         stop("'timeVarModel' should be a list object!")
       }
 
-      if (!all(colnames(timeData%in%names(timeVarModel)))){
-        stop("'timeVarModel' should contain the fixed and random formula for all time-dependent covariates in timeData!")
+      if (!all(colnames(timeData)[-which(colnames(timeData)%in%c(idVar, timeVar))]%in%names(timeVarModel))){
+        stop("'timeData' predictor names should be included in the list names of 'timeVarModel'!")
       }
     }else{
 
@@ -97,6 +99,10 @@ checking <- function(DynForest_obj = NULL,
       stop(paste0(idVar, " variable should be a numeric or integer object in 'fixedData'!"))
     }
 
+    if (any(duplicated(fixedData[,idVar]))){
+      stop("Multiple rows have been found for same id in 'fixedData'!")
+    }
+
   }
 
   # Y checking
@@ -116,9 +122,15 @@ checking <- function(DynForest_obj = NULL,
       if (!inherits(Y$Y[,idVar], c("numeric","integer"))){
         stop(paste0(idVar, " variable should be a numeric or integer object in 'Y$Y'!"))
       }
+      if (any(duplicated(Y$Y[,idVar]))){
+        stop("Multiple rows have been found for same id in 'Y$Y'!")
+      }
       if (Y$type=="surv"){
-        if (!inherits(Y$Y[,3], "numeric")){
+        if (!inherits(Y$Y[,3], c("numeric","integer"))){
           stop("The column in 'Y$Y' to provide the causes should be typed as numeric with 0 indicating no event!")
+        }
+        if (all(unique(Y$Y[,3])!=cause)){
+          stop("'cause' identifier is not included in 'Y$Y' event column!")
         }
       }
       if (!is.null(fixedData)){

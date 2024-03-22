@@ -32,7 +32,7 @@ a survival outcome in the paper:
 
 ## Installation
 
-`DynForest` package version 1.1.1 could be install from the
+`DynForest` package version 1.1.2 could be install from the
 [CRAN](https://cran.r-project.org/package=DynForest) with:
 
 ``` r
@@ -47,7 +47,7 @@ Development version of `DynForest` is also available from
 devtools::install_github("anthonydevaux/DynForest")
 ```
 
-## Quick example
+## Quick example with survival outcome
 
 ### Manage data
 
@@ -98,7 +98,7 @@ res_dyn <- DynForest(timeData = timeData, fixedData = fixedData,
                      timeVar = "time", idVar = "id",
                      timeVarModel = timeVarModel, Y = Y,
                      ntree = 50, nodesize = 5, minsplit = 5,
-                     cause = 2, ncores = 2, seed = 1234)
+                     cause = 2, ncores = 15, seed = 1234)
 ```
 
 ### Get summary
@@ -130,7 +130,7 @@ summary(res_dyn)
 #>  Average number of events of interest per leaf: 4.34 
 #> ---------------- 
 #> Computation time 
-#>  Number of cores used: 2 
-#>  Time difference of 8.185554 mins
+#>  Number of cores used: 15 
+#>  Time difference of 1.04619 mins
 #> ----------------
 ```

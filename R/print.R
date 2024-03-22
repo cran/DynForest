@@ -82,6 +82,7 @@
 #'
 #' }
 #'
+#' @method print DynForest
 #' @rdname print.DynForest
 #' @export
 print.DynForest <- function(x, ...){
@@ -117,7 +118,7 @@ print.DynForest <- function(x, ...){
                na.rm = T),2)),"\n")
   cat(paste0("\t","Average number of leaves per tree: ",
              round(mean(apply(x$rf, 2, FUN = function(x){
-               length(x$V_split$x[which(x$V_split$type=="Leaf")])}),
+               length(x$V_split$type[which(x$V_split$type=="Leaf")])}),
                na.rm = T),2)),"\n")
   cat(paste0("\t","Average number of subjects per leaf: ",
              round(mean(apply(x$rf, 2, FUN = function(x){
@@ -132,6 +133,7 @@ print.DynForest <- function(x, ...){
   cat("----------------","\n")
 }
 
+#' @method print DynForestVIMP
 #' @rdname print.DynForest
 #' @export
 print.DynForestVIMP <- function(x, ...){
@@ -145,10 +147,11 @@ print.DynForestVIMP <- function(x, ...){
                     "VIMP" = unlist(x$Importance),
                     row.names = NULL)
 
-  return(out)
+  out
 }
 
 
+#' @method print DynForestgVIMP
 #' @rdname print.DynForest
 #' @export
 print.DynForestgVIMP <- function(x, ...){
@@ -162,10 +165,11 @@ print.DynForestgVIMP <- function(x, ...){
                     "gVIMP" = x$gVIMP,
                     row.names = NULL)
 
-  return(out)
+  out
 }
 
 
+#' @method print DynForestVarDepth
 #' @rdname print.DynForest
 #' @export
 print.DynForestVarDepth <- function(x, ...){
@@ -174,10 +178,11 @@ print.DynForestVarDepth <- function(x, ...){
     stop("'x' should be an object of 'DynForestVarDepth' class!")
   }
 
-  return(x$min_depth)
+  x$min_depth
 }
 
 
+#' @method print DynForestOOB
 #' @rdname print.DynForest
 #' @export
 print.DynForestOOB <- function(x, ...){
@@ -186,5 +191,18 @@ print.DynForestOOB <- function(x, ...){
     stop("'x' should be an object of 'DynForestOOB' class!")
   }
 
-  return(mean(x$oob.err, na.rm = TRUE))
+  mean(x$oob.err, na.rm = TRUE)
+}
+
+
+#' @method print DynForestPred
+#' @rdname print.DynForest
+#' @export
+print.DynForestPred <- function(x, ...){
+
+  if (!methods::is(x,"DynForestPred")){
+    stop("'x' should be an object of 'DynForestPred' class!")
+  }
+
+  x$pred_indiv
 }

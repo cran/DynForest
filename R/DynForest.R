@@ -130,11 +130,12 @@ DynForest <- function(timeData = NULL, fixedData = NULL,
   # checking function
   checking(timeData = timeData, fixedData = fixedData,
            idVar = idVar, timeVar = timeVar, timeVarModel = timeVarModel, Y = Y,
-           ntree = ntree, mtry = mtry, nodesize = nodesize, minsplit = minsplit)
+           ntree = ntree, mtry = mtry, nodesize = nodesize, minsplit = minsplit,
+           cause = cause)
 
   # Inputs
   if (!is.null(timeData)){
-    timeData <- timeData[order(timeData[,idVar], timeData[,timeVar]),]
+    timeData <- timeData[order(timeData[,idVar], timeData[,timeVar]), c(idVar, timeVar, names(timeVarModel))]
     Longitudinal <- list(type = "Longitudinal",
                          X = subset(timeData, select = -c(get(idVar), get(timeVar))),
                          id = timeData[,idVar],
@@ -187,7 +188,7 @@ DynForest <- function(timeData = NULL, fixedData = NULL,
     Factor <- NULL
   }
 
-  Inputs <- read.Xarg(c(Longitudinal,Numeric,Factor))
+  Inputs <- c(Longitudinal$type, Numeric$type, Factor$type)
   for (k in 1:length(Inputs)){
     str_sub(Inputs[k],1,1) <- str_to_upper(str_sub(Inputs[k],1,1))
   }
