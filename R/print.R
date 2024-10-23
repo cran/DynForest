@@ -1,13 +1,11 @@
 #' Print function
 #'
-#' This function displays a brief summary regarding the trees (for class \code{DynForest}), a data frame with variable importance (for class \code{DynForestVIMP}) or the grouped variable importance (for class \code{DynForestgVIMP}).
+#' This function displays a brief summary regarding the trees (for class \code{dynforest}), a data frame with variable importance (for class \code{dynforestvimp}) or the grouped variable importance (for class \code{dynforestgvimp}).
 #'
-#' @param x Object inheriting from classes \code{DynForest}, \code{DynForestVIMP} or \code{DynForestgVIMP}.
+#' @param x Object inheriting from classes \code{dynforest}, \code{dynforestvimp} or \code{dynforestgvimp}.
 #' @param ... Optional parameters to be passed to the low level function
 #'
-#'
-#' @seealso \code{\link{DynForest} \link{var_depth} \link{compute_VIMP} \link{compute_gVIMP} \link{compute_OOBerror}}
-#'
+#' @seealso [dynforest()] [compute_ooberror()] [compute_vimp()] [compute_gvimp()] [compute_vardepth()] [predict.dynforest()]
 #'
 #' @examples
 #' \donttest{
@@ -49,8 +47,8 @@
 #' Y <- list(type = "surv",
 #'           Y = unique(pbc2_train[,c("id","years","event")]))
 #'
-#' # Run DynForest function
-#' res_dyn <- DynForest(timeData = timeData_train, fixedData = fixedData_train,
+#' # Run dynforest function
+#' res_dyn <- dynforest(timeData = timeData_train, fixedData = fixedData_train,
 #'                      timeVar = "time", idVar = "id",
 #'                      timeVarModel = timeVarModel, Y = Y,
 #'                      ntree = 50, nodesize = 5, minsplit = 5,
@@ -60,13 +58,13 @@
 #' print(res_dyn)
 #'
 #' # Compute VIMP statistic
-#' res_dyn_VIMP <- compute_VIMP(DynForest_obj = res_dyn, ncores = 2, seed = 1234)
+#' res_dyn_VIMP <- compute_vimp(dynforest_obj = res_dyn, ncores = 2, seed = 1234)
 #'
 #' # Print function
 #' print(res_dyn_VIMP)
 #'
 #' # Compute gVIMP statistic
-#' res_dyn_gVIMP <- compute_gVIMP(DynForest_obj = res_dyn,
+#' res_dyn_gVIMP <- compute_gvimp(dynforest_obj = res_dyn,
 #'                                group = list(group1 = c("serBilir","SGOT"),
 #'                                             group2 = c("albumin","alkaline")),
 #'                                ncores = 2, seed = 1234)
@@ -75,20 +73,22 @@
 #' print(res_dyn_gVIMP)
 #'
 #' # Run var_depth function
-#' res_varDepth <- var_depth(res_dyn)
+#' res_varDepth <- compute_vardepth(res_dyn)
 #'
 #' # Print function
 #' print(res_varDepth)
 #'
 #' }
 #'
-#' @method print DynForest
-#' @rdname print.DynForest
+#' @rdname print.dynforest
 #' @export
-print.DynForest <- function(x, ...){
+print.dynforest <- function(x, ...){
 
-  if (!methods::is(x,"DynForest")){
-    stop("'x' should be an object of 'DynForest' class!")
+  if (!methods::is(x,"dynforest")){
+    cli_abort(c(
+      "{.var x} must be a dynforest object",
+      "x" = "You've supplied a {.cls {class(x)}} object"
+    ))
   }
 
   if (x$type=="surv"){
@@ -110,7 +110,7 @@ print.DynForest <- function(x, ...){
     type <- "continuous"
   }
 
-  cat(paste0("DynForest in ", type, " mode"), "\n")
+  cat(paste0("dynforest in ", type, " mode"), "\n")
   cat("----------------","\n")
   cat(paste0("\t","Average depth per tree: ",
              round(mean(apply(x$rf, 2, FUN = function(x){
@@ -133,13 +133,15 @@ print.DynForest <- function(x, ...){
   cat("----------------","\n")
 }
 
-#' @method print DynForestVIMP
-#' @rdname print.DynForest
+#' @rdname print.dynforest
 #' @export
-print.DynForestVIMP <- function(x, ...){
+print.dynforestvimp <- function(x, ...){
 
-  if (!methods::is(x,"DynForestVIMP")){
-    stop("'x' should be an object of 'DynForestVIMP' class!")
+  if (!methods::is(x,"dynforestvimp")){
+    cli_abort(c(
+      "{.var x} must be a dynforestvimp object",
+      "x" = "You've supplied a {.cls {class(x)}} object"
+    ))
   }
 
   out <- data.frame("Predictors" = unlist(x$Inputs),
@@ -147,17 +149,20 @@ print.DynForestVIMP <- function(x, ...){
                     "VIMP" = unlist(x$Importance),
                     row.names = NULL)
 
-  out
+  print.data.frame(out)
+
 }
 
 
-#' @method print DynForestgVIMP
-#' @rdname print.DynForest
+#' @rdname print.dynforest
 #' @export
-print.DynForestgVIMP <- function(x, ...){
+print.dynforestgvimp <- function(x, ...){
 
-  if (!methods::is(x,"DynForestgVIMP")){
-    stop("'x' should be an object of 'DynForestgVIMP' class!")
+  if (!methods::is(x,"dynforestgvimp")){
+    cli_abort(c(
+      "{.var x} must be a dynforestgvimp object",
+      "x" = "You've supplied a {.cls {class(x)}} object"
+    ))
   }
 
   out <- data.frame("Group" = names(x$gVIMP),
@@ -165,44 +170,54 @@ print.DynForestgVIMP <- function(x, ...){
                     "gVIMP" = x$gVIMP,
                     row.names = NULL)
 
-  out
+  print.data.frame(out)
 }
 
 
-#' @method print DynForestVarDepth
-#' @rdname print.DynForest
+#' @rdname print.dynforest
 #' @export
-print.DynForestVarDepth <- function(x, ...){
+print.dynforestvardepth <- function(x, ...){
 
-  if (!methods::is(x,"DynForestVarDepth")){
-    stop("'x' should be an object of 'DynForestVarDepth' class!")
+  if (!methods::is(x,"dynforestvardepth")){
+    cli_abort(c(
+      "{.var x} must be a dynforestvardepth object",
+      "x" = "You've supplied a {.cls {class(x)}} object"
+    ))
   }
 
-  x$min_depth
+  print.data.frame(x$min_depth)
+
 }
 
 
-#' @method print DynForestOOB
-#' @rdname print.DynForest
+#' @rdname print.dynforest
 #' @export
-print.DynForestOOB <- function(x, ...){
+print.dynforestoob <- function(x, ...){
 
-  if (!methods::is(x,"DynForestOOB")){
-    stop("'x' should be an object of 'DynForestOOB' class!")
+  if (!methods::is(x,"dynforestoob")){
+    cli_abort(c(
+      "{.var x} must be a dynforestoob object",
+      "x" = "You've supplied a {.cls {class(x)}} object"
+    ))
   }
 
-  mean(x$oob.err, na.rm = TRUE)
+  out <- mean(x$oob.err, na.rm = TRUE)
+
+  print(out)
 }
 
 
-#' @method print DynForestPred
-#' @rdname print.DynForest
+#' @rdname print.dynforest
 #' @export
-print.DynForestPred <- function(x, ...){
+print.dynforestpred <- function(x, ...){
 
-  if (!methods::is(x,"DynForestPred")){
-    stop("'x' should be an object of 'DynForestPred' class!")
+  if (!methods::is(x,"dynforestpred")){
+    cli_abort(c(
+      "{.var x} must be a dynforestpred object",
+      "x" = "You've supplied a {.cls {class(x)}} object"
+    ))
   }
 
   x$pred_indiv
+
 }

@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+<meta name="date" content="2024-10-23" />
+
+<title>Overview of DynForest package</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Overview of <code>DynForest</code>
+package</h1>
+<h4 class="date">2024-10-23</h4>
+
+
+
+<p><code>DynForest</code> methodology was implemented into the R package
+<code>DynForest</code> <span class="citation">(Devaux 2024)</span>
+freely available on The Comprehensive R Archive Network (CRAN) to
+users.</p>
+<p>The package includes two main functions: <code>dynforest()</code> and
+<code>predict()</code> for the learning and the prediction steps. These
+functions are fully described in section 3.1 and 3.2. Other functions
+available are briefly described in the table below. These functions are
+illustrated in examples, one for a survival outcome, one for a
+categorical outcome and one for a continuous outcome.</p>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><em>Learning and prediction steps</em></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>dynforest()</code></td>
+<td>Function that builds the random forest</td>
+</tr>
+<tr class="odd">
+<td><code>predict()</code></td>
+<td>Function for S3 class <code>dynforest</code> predicting the outcome
+on new subjects using the individual-specific information</td>
+</tr>
+<tr class="even">
+<td><em>Assessment function</em></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>compute_ooberror()</code></td>
+<td>Function that computes the Out-Of-Bag error to be minimized to tune
+the random forest</td>
+</tr>
+<tr class="even">
+<td><em>Exploring functions</em></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>compute_vimp()</code></td>
+<td>Function that computes the importance of variables</td>
+</tr>
+<tr class="even">
+<td><code>compute_gvimp()</code></td>
+<td>Function that computes the importance of a group of variables</td>
+</tr>
+<tr class="odd">
+<td><code>compute_vardepth()</code></td>
+<td>Function that extracts information about the tree building
+process</td>
+</tr>
+<tr class="even">
+<td><em>plot() functions for S3 class:</em></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>dynforest</code></td>
+<td>Plot the estimated CIF for given tree nodes or subjects</td>
+</tr>
+<tr class="even">
+<td><code>dynforestpred</code></td>
+<td>Plot the predicted CIF for the cause of interest for given
+subjects</td>
+</tr>
+<tr class="odd">
+<td><code>dynforestvimp</code></td>
+<td>Plot the importance of variables by value or percentage</td>
+</tr>
+<tr class="even">
+<td><code>dynforestgvimp</code></td>
+<td>Plot the importance of a group of variables by value or
+percentage</td>
+</tr>
+<tr class="odd">
+<td><code>dynforestvardepth</code></td>
+<td>Plot the minimal depth by predictors or features</td>
+</tr>
+<tr class="even">
+<td><em>Other functions</em></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>summary()</code></td>
+<td>Function for class S3 <code>dynforest</code> or
+<code>dynforestoob</code> displaying information about the type of
+random forest, predictors included, parameters used, Out-Of-Bag error
+(only for <code>dynforestoob</code> class) and brief summaries about the
+leaves</td>
+</tr>
+<tr class="even">
+<td><code>print()</code></td>
+<td>Function to print object of class <code>dynforest</code>,
+<code>dynforestoob</code>, <code>dynforestvimp</code>,
+<code>dynforestgvimp</code>, <code>dynforestvardepth</code> and
+<code>dynforestpred</code></td>
+</tr>
+<tr class="odd">
+<td><code>get_tree()</code></td>
+<td>Function that extracts the tree structure for a given tree</td>
+</tr>
+<tr class="even">
+<td><code>get_treenode()</code></td>
+<td>Function that extracts the terminal node identifiers for a given
+tree</td>
+</tr>
+</tbody>
+</table>
+<div id="dynforest-function" class="section level2">
+<h2><code>dynforest()</code> function</h2>
+<p><code>dynforest()</code> is the function to build the random forest.
+The call of this function is:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">dynforest</span>(<span class="at">timeData =</span> <span class="cn">NULL</span>, <span class="at">fixedData =</span> <span class="cn">NULL</span>, <span class="at">idVar =</span> <span class="cn">NULL</span>, </span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>          <span class="at">timeVar =</span> <span class="cn">NULL</span>, <span class="at">timeVarModel =</span> <span class="cn">NULL</span>, <span class="at">Y =</span> <span class="cn">NULL</span>, </span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>          <span class="at">ntree =</span> <span class="dv">200</span>, <span class="at">mtry =</span> <span class="cn">NULL</span>, <span class="at">nodesize =</span> <span class="dv">1</span>, <span class="at">minsplit =</span> <span class="dv">2</span>, <span class="at">cause =</span> <span class="dv">1</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>          <span class="at">nsplit_option =</span> <span class="st">&quot;quantile&quot;</span>, <span class="at">ncores =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>          <span class="at">seed =</span> <span class="dv">1234</span>, <span class="at">verbose =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div id="arguments" class="section level3">
+<h3>Arguments</h3>
+<p><code>timeData</code> is an optional argument that contains the
+dataframe in longitudinal format (i.e., one observation per row) for the
+time-dependent predictors. In addition to time-dependent predictors,
+this dataframe should include a unique identifier and the measurement
+times. This argument is set to <code>NULL</code> if no time-dependent
+predictor is included. Argument <code>fixedData</code> contains the
+dataframe in wide format (i.e., one subject per row) for the time-fixed
+predictors. In addition to time-fixed predictors, this dataframe should
+also include the same identifier as used in <code>timeData.</code> This
+argument is set to <code>NULL</code> if no time-fixed predictor is
+included. Argument <code>idVar</code> provides the name of identifier
+variable included in <code>timeData</code> and <code>fixedData</code>
+dataframes. Argument <code>timeVar</code> provides the name of time
+variable included in <code>timeData</code> dataframe. Argument
+<code>timeVarModel</code> contains as many lists as time-dependent
+predictors defined in <code>timeData</code> to specify the structure of
+the mixed models assumed for each predictor. For each time-dependent
+predictor, the list should contain a <code>fixed</code> and a
+<code>random</code> argument to define the formula of a mixed model to
+be estimated with <code>lcmm</code> R package <span class="citation">(Proust-Lima, Philipps, and Liquet 2017)</span>.
+<code>fixed</code> defines the formula for the fixed-effects and
+<code>random</code> for the random-effects (e.g.,
+<code>list(Y1 = list(fixed = Y1 ~ time, random = ~ time))</code>.
+Argument <code>Y</code> contains a list of two elements
+<code>type</code> and <code>Y</code>. Element <code>type</code> defines
+the nature of the outcome (<code>surv</code> for survival outcome with
+possibly competing causes, <code>numeric</code> for continuous outcome
+and <code>factor</code> for categorical outcome) and element
+<code>Y</code> defines the dataframe which includes the identifier (same
+as in <code>timeData</code> and <code>fixedData</code> dataframes) and
+outcome variables.</p>
+<p>Arguments <code>ntree</code>, <code>mtry</code>,
+<code>nodesize</code> and <code>minsplit</code> are the hyperparameters
+of the random forest. Argument <code>ntree</code> controls the number of
+trees in the random forest (200 by default). Argument <code>mtry</code>
+indicates the number of variables randomly drawn at each node (square
+root of the total number of predictors by default). Argument
+<code>nodesize</code> indicates the minimal number of subjects allowed
+in the leaves (1 by default). Argument <code>minsplit</code> controls
+the minimal number of events required to split the node (2 by
+default).</p>
+<p>For survival outcome, argument <code>cause</code> indicates the event
+the interest. Argument <code>nsplit_option</code> indicates the method
+to build the two groups of individuals at each node. By default, we
+build the groups according to deciles (<code>quantile</code> option) but
+they could be built according to random values (<code>sample</code>
+option).</p>
+<p>Argument <code>ncores</code> indicates the number of cores used to
+grow the trees in parallel mode. By default, we set the number of cores
+of the computer minus 1. Argument <code>seed</code> specifies the random
+seed. It can be fixed to replicate the results. Argument
+<code>verbose</code> allows to display a progression bar during the
+execution of the function.</p>
+</div>
+<div id="values" class="section level3">
+<h3>Values</h3>
+<p><code>dynforest()</code> function returns an object of class
+<code>dynforest</code> containing several elements:</p>
+<ul>
+<li><code>data</code> a list with longitudinal predictors
+(<code>Longitudinal</code> element), continuous predictors
+(<code>Numeric</code> element) and categorical predictors
+(<code>Factor</code> element)</li>
+<li><code>rf</code> is a dataframe with one column per tree containing a
+list with several elements, which includes:
+<ul>
+<li><code>leaves</code> the leaf identifier for each subject used to
+grow the tree</li>
+<li><code>idY</code> the identifiers for each subject used to grow the
+tree</li>
+<li><code>V_split</code> the split summary (more detailed below)</li>
+<li><code>Y_pred</code> the estimated outcome in each leaf</li>
+<li><code>model_param</code> the estimated parameters of the mixed model
+for the longitudinal predictors used to split the subjects at each
+node</li>
+<li><code>Ytype</code>, <code>hist_nodes</code>, <code>Y</code>,
+<code>boot</code> and <code>Ylevels</code> internal information used in
+other functions</li>
+</ul></li>
+<li><code>type</code> the nature of the outcome</li>
+<li><code>times</code> the event times (only for survival outcome)</li>
+<li><code>cause</code> the cause of interest (only for survival
+outcome)</li>
+<li><code>causes</code> the unique causes (only for survival
+outcome)</li>
+<li><code>Inputs</code> the list of predictors names for
+<code>Longitudinal</code> (longitudinal predictor),
+<code>Continuous</code> (continuous predictor) and <code>Factor</code>
+(categorical predictor)</li>
+<li><code>Longitudinal.model</code> the mixed model specification for
+each longitudinal predictor</li>
+<li><code>param</code> a list of hyperparameters used to grow the random
+forest</li>
+<li><code>comput.time</code> the computation time</li>
+</ul>
+<p>The main information returned by <code>rf</code> is
+<code>V_split</code> element which can also be extract using
+<code>get_tree()</code> function. This element contains a table sorted
+by the node/leaf identifier (<code>id_node</code> column) with each row
+representing a node/leaf. Each column provides information about the
+splits:</p>
+<ul>
+<li><code>type</code>: the nature of the predictor
+(<code>Longitudinal</code> for longitudinal predictor,
+<code>Numeric</code> for continuous predictor or <code>Factor</code> for
+categorical predictor) if the node was split, <code>Leaf</code>
+otherwise;</li>
+<li><code>var_split</code>: the predictor used for the split defined by
+its order in <code>timeData</code> and <code>fixedData</code>;</li>
+<li><code>feature</code>: the feature used for the split defined by its
+position in random statistic;</li>
+<li><code>threshold</code>: the threshold used for the split (only with
+<code>Longitudinal</code> and <code>Numeric</code>). No information is
+returned for <code>Factor</code>;</li>
+<li><code>N</code>: the number of subjects in the node/leaf;</li>
+<li><code>Nevent</code>: the number of events of interest in the
+node/leaf (only with survival outcome);</li>
+<li><code>depth</code>: the depth level of the node/leaf.</li>
+</ul>
+</div>
+<div id="additional-information-about-the-dependencies" class="section level3">
+<h3>Additional information about the dependencies</h3>
+<p><code>dynforest()</code> function internally calls other functions
+from related packages to build the random forest:</p>
+<ul>
+<li><code>hlme()</code> function (from <code>lcmm</code> package <span class="citation">(Proust-Lima, Philipps, and Liquet 2017)</span>) to fit
+the mixed models for the time-dependent predictors defined in
+<code>timeData</code> and <code>timeVarModel</code> arguments</li>
+<li><code>Entropy()</code> function (from base package) to compute the
+Shannon entropy</li>
+<li><code>survdiff()</code> function (from <code>survival</code> package
+<span class="citation">(Therneau 2022)</span>) to compute the log-rank
+statistic test</li>
+<li><code>crr()</code> function (from <code>cmprsk</code> package <span class="citation">(Gray 2020)</span>) to compute the Fine &amp; Gray
+statistic test</li>
+</ul>
+</div>
+</div>
+<div id="predict-function" class="section level2">
+<h2><code>predict()</code> function</h2>
+<p><code>predict()</code> is the S3 function for class
+<code>dynforest</code> to predict the outcome on new subjects. Landmark
+time can be specified to consider only longitudinal data collected up to
+this time to compute the prediction. The call of this function is:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">predict</span>(object, <span class="at">timeData =</span> <span class="cn">NULL</span>, <span class="at">fixedData =</span> <span class="cn">NULL</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>        idVar, timeVar, <span class="at">t0 =</span> <span class="cn">NULL</span>)</span></code></pre></div>
+<div id="arguments-1" class="section level3">
+<h3>Arguments</h3>
+<p>Argument <code>object</code> contains a <code>dynforest</code> object
+resulting from <code>dynforest()</code> function. Argument
+<code>timeData</code> contains the dataframe in longitudinal format
+(i.e., one observation per row) for the time-dependent predictors of new
+subjects. In addition to time-dependent predictors, this dataframe
+should also include a unique identifier and the time measurements. This
+argument can be set to <code>NULL</code> if no time-dependent predictor
+is included. Argument <code>fixedData</code> contains the dataframe in
+wide format (i.e., one subject per row) for the time-fixed predictors of
+new subjects. In addition to time-fixed predictors, this dataframe
+should also include an unique identifier. This argument can be set to
+<code>NULL</code> if no time-fixed predictor is included. Argument
+<code>idVar</code> provides the name of the identifier variable included
+in <code>timeData</code> and <code>fixedData</code> dataframes. Argument
+<code>timeVar</code> provides the name of time-measurement variable
+included in <code>timeData</code> dataframe. Argument <code>t0</code>
+defines the landmark time; only the longitudinal data collected up to
+this time are to be considered. This argument should be set to
+<code>NULL</code> to include all longitudinal data.</p>
+</div>
+<div id="values-1" class="section level3">
+<h3>Values</h3>
+<p><code>predict()</code> function returns several elements:</p>
+<ul>
+<li><code>t0</code> the landmark time defined in argument
+(<code>NULL</code> by default)</li>
+<li><code>times</code> times used to compute the individual predictions
+(only with survival outcome). The times are defined according to the
+time-to-event subjects used to build the random forest.</li>
+<li><code>pred_indiv</code> the predicted outcome for the new subject.
+With survival outcome, predictions are provided for each time defined in
+<code>times</code> element.</li>
+<li><code>pred_leaf</code> a table giving for each tree (in column) the
+leaf in which each subject is assigned (in row)</li>
+<li><code>pred_indiv_proba</code> the proportion of the trees leading to
+the category prediction for each subject (only with categorical
+outcome)</li>
+</ul>
+</div>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2 class="unnumbered">References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-devaux_dynforest_2024" class="csl-entry">
+Devaux, Anthony. 2024. <em><span>DynForest</span>: <span>Random</span>
+<span>Forest</span> with <span>Multivariate</span>
+<span>Longitudinal</span> <span>Predictors</span></em>. <a href="https://CRAN.R-project.org/package=DynForest">https://CRAN.R-project.org/package=DynForest</a>.
+</div>
+<div id="ref-gray_cmprsk_2020" class="csl-entry">
+Gray, Bob. 2020. <em><span class="nocase">cmprsk</span>: Subdistribution
+Analysis of Competing Risks</em>. <a href="https://CRAN.R-project.org/package=cmprsk">https://CRAN.R-project.org/package=cmprsk</a>.
+</div>
+<div id="ref-proust_lima_estimation_2017" class="csl-entry">
+Proust-Lima, Cécile, Viviane Philipps, and Benoit Liquet. 2017.
+<span>“Estimation of <span>Extended</span> <span>Mixed</span>
+<span>Models</span> <span>Using</span> <span>Latent</span>
+<span>Classes</span> and <span>Latent</span> <span>Processes</span>:
+<span>The</span> <span>R</span> <span>Package</span> <span class="nocase">lcmm</span>.”</span> <em>Journal of Statistical
+Software</em> 78 (2): 1–56. <a href="https://doi.org/10.18637/jss.v078.i02">https://doi.org/10.18637/jss.v078.i02</a>.
+</div>
+<div id="ref-therneau_2022_survival" class="csl-entry">
+Therneau, Terry M. 2022. <em>A Package for Survival Analysis in
+<span>R</span></em>. <a href="https://CRAN.R-project.org/package=survival">https://CRAN.R-project.org/package=survival</a>.
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
